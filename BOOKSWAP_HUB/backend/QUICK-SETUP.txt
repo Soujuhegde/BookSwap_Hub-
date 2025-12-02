@@ -1,0 +1,23 @@
+BOOKSWAP HUB - QUICK DATABASE SETUP
+====================================
+
+Open MySQL Workbench or MySQL Command Line Client and run these commands:
+
+1. CREATE DATABASE IF NOT EXISTS bookswap_db;
+
+2. CREATE USER IF NOT EXISTS 'bookswap_user'@'localhost' IDENTIFIED BY 'bookswap_password_2024';
+
+3. GRANT ALL PRIVILEGES ON bookswap_db.* TO 'bookswap_user'@'localhost';
+
+4. FLUSH PRIVILEGES;
+
+5. Verify by running:
+   USE bookswap_db;
+   SELECT 'Setup Complete!' AS Status;
+
+That's it! Then go back to Claude Code and confirm completion.
+
+Alternative: If you prefer to use your existing root credentials:
+Edit the .env file and change:
+DB_USERNAME=root
+DB_PASSWORD=your_root_password_here

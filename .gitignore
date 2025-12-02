@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# History and logs
+.history/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Scraped/Temporary folders
+cdn.jsdelivr.net/
+fonts.googleapis.com/
+fonts.gstatic.com/
+kit.fontawesome.com/
+public.readdy.ai/
+readdy.ai/
+readdy.link/
+static.readdy.ai/
+photos/
