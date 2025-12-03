@@ -69,18 +69,32 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
     setErrors({});
 
     setTimeout(() => {
+      const storedUser = localStorage.getItem('registeredUser');
+      let isRegisteredUser = false;
+      let registeredUserData = null;
+
+      if (storedUser) {
+        registeredUserData = JSON.parse(storedUser);
+        if (
+          formData.email === registeredUserData.email &&
+          formData.password === registeredUserData.password
+        ) {
+          isRegisteredUser = true;
+        }
+      }
+
       if (
-        formData.email === mockCredentials.email &&
-        formData.password === mockCredentials.password
+        (formData.email === mockCredentials.email && formData.password === mockCredentials.password) ||
+        isRegisteredUser
       ) {
         const response: AuthResponse = {
           success: true,
           accessToken: 'mock-access-token-' + Date.now(),
           refreshToken: 'mock-refresh-token-' + Date.now(),
           user: {
-            id: 'user-001',
+            id: isRegisteredUser ? 'user-new' : 'user-001',
             email: formData.email,
-            name: 'John Doe',
+            name: isRegisteredUser ? registeredUserData.fullName : 'John Doe',
           },
         };
 
@@ -97,10 +111,10 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
         }
 
         setIsLoading(false);
-        navigate('/browse-books');
+        if (!onSuccess) navigate('/browse-books');
       } else {
         setErrors({
-          general: `Invalid credentials. Please use:\nEmail: ${mockCredentials.email}\nPassword: ${mockCredentials.password}`,
+          general: `Invalid credentials.`,
         });
         setIsLoading(false);
       }

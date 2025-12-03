@@ -1,7 +1,19 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Icon from '../components/AppIcon';
 
 const About = () => {
+    const [showPopup, setShowPopup] = useState(false);
+    const [email, setEmail] = useState('');
+
+    const handleSubscribe = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (email) {
+            setShowPopup(true);
+            setEmail('');
+        }
+    };
     const features = [
         {
             icon: 'BookOpen',
@@ -204,18 +216,71 @@ const About = () => {
                         <div className="bg-gradient-to-br from-primary to-gray-900 p-12 rounded-3xl shadow-2xl text-white">
                             <div className="space-y-6">
                                 <p className="text-xl leading-relaxed">
-                                    🎓 It all started with a simple frustration: textbooks were too expensive, and perfectly good books
-                                    were being thrown away after each semester. A group of college students decided to change that.
+                                    🎓 It all began with a simple frustration I faced: textbooks were becoming too expensive, and perfectly good books were being left unused after each semester.
+                                    📚💸 I wanted to fix this-not just for myself, but for anyone who felt the same.
                                 </p>
                                 <p className="text-xl leading-relaxed">
-                                    💡 What began as a shared spreadsheet among friends quickly evolved into something bigger.
-                                    We realized we weren't just solving a problem—we were building a community.
+                                    💡 What started as a small idea soon grew into something meaningful. I wasn’t just creating a platform -
+                                    I was building a space where people could share, connect, and support each other.
                                 </p>
                                 <p className="text-xl leading-relaxed">
                                     🚀 Today, BookSwap Hub serves thousands of readers across the country, facilitating meaningful
-                                    connections and making books accessible to everyone. Every exchange tells a story, and we're
+                                    connections and making books accessible to everyone. Every exchange tells a story, and I'm
                                     proud to be part of yours!
                                 </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Meet the Founder Section */}
+            <section className="py-20 bg-stone-50">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col md:flex-row items-center gap-12">
+                        {/* Image */}
+                        <div className="w-full md:w-1/3">
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-primary/20 rounded-3xl transform rotate-6"></div>
+                                <img
+                                    src="/Founder img.jpeg"
+                                    alt="Founder"
+                                    className="relative rounded-3xl shadow-xl w-full aspect-[3/4] object-cover"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="w-full md:w-2/3">
+                            <div className="inline-block px-4 py-2 bg-white rounded-full shadow-sm mb-6 border border-gray-100">
+                                <span className="text-sm font-medium text-primary">Meet the Founder</span>
+                            </div>
+
+                            <h2 className="text-4xl font-bold text-gray-900 mb-6">
+                                Built by a Book Lover, <br />
+                                <span className="text-primary font-pacifico">For Book Lovers</span>
+                            </h2>
+
+                            <blockquote className="text-xl text-gray-600 italic mb-8 border-l-4 border-primary pl-6">
+                                "I started BookSwap Hub because I believe that the best stories are the ones we share.
+                                Every book on a shelf is a conversation waiting to happen."
+                            </blockquote>
+
+                            <div className="space-y-4">
+                                <h3 className="text-xl font-bold text-gray-900">Soujanya S P</h3>
+                                <p className="text-gray-500">Founder of BookSwap Hub</p>
+
+                                <div className="flex gap-4 pt-4">
+                                    <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+                                        <Icon name="Linkedin" size={24} />
+                                    </a>
+                                    <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+                                        <Icon name="Twitter" size={24} />
+                                    </a>
+                                    <a href="#" className="text-gray-400 hover:text-primary transition-colors">
+                                        <Icon name="Globe" size={24} />
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -280,16 +345,19 @@ const About = () => {
                                 Join our newsletter to get the latest updates on book meets, new features, and reading recommendations.
                             </p>
 
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-lg mx-auto">
+                            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-4 justify-center max-w-lg mx-auto">
                                 <input
                                     type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     placeholder="Enter your email address"
                                     className="flex-1 px-6 py-4 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                    required
                                 />
-                                <button className="px-8 py-4 bg-amber-400 text-primary font-bold rounded-xl hover:bg-amber-300 transition-colors">
+                                <button type="submit" className="px-8 py-4 bg-amber-400 text-primary font-bold rounded-xl hover:bg-amber-300 transition-colors">
                                     Subscribe
                                 </button>
-                            </div>
+                            </form>
                             <p className="text-sm text-primary-foreground/60 mt-6">
                                 No spam, just good stories. Unsubscribe anytime.
                             </p>
@@ -324,25 +392,25 @@ const About = () => {
                         <div>
                             <h5 className="font-bold text-lg mb-4">Platform</h5>
                             <ul className="space-y-3 text-gray-400">
-                                <li><a href="/" className="hover:text-white transition-colors hover:translate-x-1 inline-block">Browse Books</a></li>
-                                <li><a href="/signup" className="hover:text-white transition-colors hover:translate-x-1 inline-block">List a Book</a></li>
-                                <li><a href="/about" className="hover:text-white transition-colors hover:translate-x-1 inline-block">About Us</a></li>
+                                <li><Link to="/browse-books" className="hover:text-white transition-colors hover:translate-x-1 inline-block">Browse Books</Link></li>
+                                <li><Link to="/my-books" className="hover:text-white transition-colors hover:translate-x-1 inline-block">List a Book</Link></li>
+                                <li><Link to="/about" className="hover:text-white transition-colors hover:translate-x-1 inline-block">About Us</Link></li>
                             </ul>
                         </div>
                         <div>
                             <h5 className="font-bold text-lg mb-4">Support</h5>
                             <ul className="space-y-3 text-gray-400">
-                                <li><a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">Help Center</a></li>
-                                <li><a href="/contact" className="hover:text-white transition-colors hover:translate-x-1 inline-block">Contact Us</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">Feedback</a></li>
+                                <li><Link to="/contact" className="hover:text-white transition-colors hover:translate-x-1 inline-block">Help Center</Link></li>
+                                <li><Link to="/contact" className="hover:text-white transition-colors hover:translate-x-1 inline-block">Contact Us</Link></li>
+                                <li><Link to="/contact" className="hover:text-white transition-colors hover:translate-x-1 inline-block">Feedback</Link></li>
                             </ul>
                         </div>
                         <div>
                             <h5 className="font-bold text-lg mb-4">Legal</h5>
                             <ul className="space-y-3 text-gray-400">
-                                <li><a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">Privacy Policy</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">Terms of Service</a></li>
-                                <li><a href="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">Cookie Policy</a></li>
+                                <li><Link to="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">Privacy Policy</Link></li>
+                                <li><Link to="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">Terms of Service</Link></li>
+                                <li><Link to="#" className="hover:text-white transition-colors hover:translate-x-1 inline-block">Cookie Policy</Link></li>
                             </ul>
                         </div>
                     </div>
@@ -351,6 +419,40 @@ const About = () => {
                     </div>
                 </div>
             </footer>
+            {/* Subscription Success Popup */}
+            {showPopup && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full relative transform transition-all animate-in zoom-in-95 duration-300">
+                        <button
+                            onClick={() => setShowPopup(false)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                            <Icon name="X" size={24} />
+                        </button>
+
+                        <div className="text-center">
+                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <Icon name="Check" size={32} className="text-green-600" />
+                            </div>
+
+                            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                                Thanks for subscribing!
+                            </h3>
+
+                            <p className="text-gray-600 leading-relaxed mb-8">
+                                You'll now receive updates, offers, and new features straight to your inbox.
+                            </p>
+
+                            <button
+                                onClick={() => setShowPopup(false)}
+                                className="w-full py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-colors"
+                            >
+                                Continue Reading
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

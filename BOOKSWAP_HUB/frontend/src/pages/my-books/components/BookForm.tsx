@@ -13,13 +13,13 @@ interface BookFormProps {
 
 const BookForm = ({ book, onSubmit, onCancel }: BookFormProps) => {
   const [formData, setFormData] = useState<BookFormData>({
-    title: '',
-    author: '',
-    genre: '',
-    condition: 'Good',
-    description: '',
-    imageUrl: '',
-    imageAlt: '',
+    title: book?.title || '',
+    author: book?.author || '',
+    genre: book?.genre || '',
+    condition: book?.condition || 'Good',
+    description: book?.description || '',
+    imageUrl: book?.imageUrl || '',
+    imageAlt: book?.imageAlt || '',
   });
 
   const [errors, setErrors] = useState<Partial<Record<keyof BookFormData, string>>>({});
@@ -28,13 +28,13 @@ const BookForm = ({ book, onSubmit, onCancel }: BookFormProps) => {
   useEffect(() => {
     if (book) {
       setFormData({
-        title: book.title,
-        author: book.author,
-        genre: book.genre,
-        condition: book.condition,
-        description: book.description,
-        imageUrl: book.imageUrl,
-        imageAlt: book.imageAlt,
+        title: book.title || '',
+        author: book.author || '',
+        genre: book.genre || '',
+        condition: book.condition || 'Good',
+        description: book.description || '',
+        imageUrl: book.imageUrl || '',
+        imageAlt: book.imageAlt || '',
       });
     }
   }, [book]);
@@ -63,25 +63,25 @@ const BookForm = ({ book, onSubmit, onCancel }: BookFormProps) => {
     const newErrors: Partial<Record<keyof BookFormData, string>> = {};
 
     if (step === 1) {
-      if (!formData.title.trim()) {
+      if (!formData.title?.trim()) {
         newErrors.title = 'Title is required';
       }
-      if (!formData.author.trim()) {
+      if (!formData.author?.trim()) {
         newErrors.author = 'Author is required';
       }
       if (!formData.genre) {
         newErrors.genre = 'Genre is required';
       }
     } else if (step === 2) {
-      if (!formData.description.trim()) {
+      if (!formData.description?.trim()) {
         newErrors.description = 'Description is required';
       } else if (formData.description.length < 20) {
         newErrors.description = 'Description must be at least 20 characters';
       }
-      if (!formData.imageUrl.trim()) {
+      if (!formData.imageUrl?.trim()) {
         newErrors.imageUrl = 'Image URL is required';
       }
-      if (!formData.imageAlt.trim()) {
+      if (!formData.imageAlt?.trim()) {
         newErrors.imageAlt = 'Image description is required for accessibility';
       }
     }
@@ -93,6 +93,17 @@ const BookForm = ({ book, onSubmit, onCancel }: BookFormProps) => {
   const handleNext = () => {
     if (validateStep(currentStep)) {
       setCurrentStep(2);
+    } else {
+      const missingFields = [];
+      if (currentStep === 1) {
+        if (!formData.title?.trim()) missingFields.push('Title');
+        if (!formData.author?.trim()) missingFields.push('Author');
+        if (!formData.genre) missingFields.push('Genre');
+      }
+
+      if (missingFields.length > 0) {
+        alert(`Please fill in the following required fields: ${missingFields.join(', ')}`);
+      }
     }
   };
 
@@ -105,7 +116,7 @@ const BookForm = ({ book, onSubmit, onCancel }: BookFormProps) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-background rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-background rounded-2xl shadow-xl w-full max-w-[800px] max-h-[75vh] overflow-y-auto flex flex-col relative">
         <div className="sticky top-0 bg-background border-b border-border p-6 z-10">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-heading font-semibold text-foreground">
@@ -129,7 +140,7 @@ const BookForm = ({ book, onSubmit, onCancel }: BookFormProps) => {
                 Basic Info
               </span>
             </div>
-            <div className="flex-1 h-0.5 bg-border" />
+            <div className="w-12 h-0.5 bg-border" />
             <div className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep >= 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                 2
@@ -265,15 +276,14 @@ const BookForm = ({ book, onSubmit, onCancel }: BookFormProps) => {
               Cancel
             </Button>
             {currentStep === 1 ? (
-              <Button
+              <button
                 type="button"
                 onClick={handleNext}
-                iconName="ChevronRight"
-                iconPosition="right"
-                fullWidth
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
               >
                 Next
-              </Button>
+                <Icon name="ChevronRight" size={16} className="ml-2" />
+              </button>
             ) : (
               <Button
                 type="submit"

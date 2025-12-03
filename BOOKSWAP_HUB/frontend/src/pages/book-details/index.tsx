@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Book, SimilarBook, OwnerBook, ExchangeRequestForm } from './types';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { Book as DetailBook, SimilarBook, OwnerBook, ExchangeRequestForm } from './types';
+import { Book as SourceBook } from '../browse-books/types';
 import Header from '../../components/Header';
 import BookCover from './components/BookCover';
 import BookInfo from './components/BookInfo';
@@ -11,37 +12,49 @@ import OwnerOtherBooks from './components/OwnerOtherBooks';
 import ExchangeRequestModal from './components/ExchangeRequestModal';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
+import { mockBooks } from '../../data/mockBooks';
 
 const BookDetails = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [searchParams] = useSearchParams();
-    const bookId = searchParams.get('id') || '1';
+
+    // Get bookId from location state (preferred) or URL params
+    const bookId = location.state?.bookId || searchParams.get('id') || '1';
 
     const [isAuthenticated] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-    const mockBook: Book = {
-        id: bookId,
-        title: "The Psychology of Money",
-        author: "Morgan Housel",
-        genre: "Finance & Business",
-        condition: "Like New",
-        status: "Available",
-        imageUrl: "https://images.unsplash.com/photo-1592496431122-2349e0fbc666",
-        imageAlt: "Book cover of The Psychology of Money showing minimalist design with gold coins and financial symbols on dark blue background",
-        description: `Doing well with money isn't necessarily about what you know. It's about how you behave. And behavior is hard to teach, even to really smart people.\n\nMoney—investing, personal finance, and business decisions—is typically taught as a math-based field, where data and formulas tell us exactly what to do. But in the real world people don't make financial decisions on a spreadsheet. They make them at the dinner table, or in a meeting room, where personal history, your own unique view of the world, ego, pride, marketing, and odd incentives are scrambled together.\n\nIn The Psychology of Money, award-winning author Morgan Housel shares 19 short stories exploring the strange ways people think about money and teaches you how to make better sense of one of life's most important topics.`,
-        ownerNotes: `This book is in excellent condition with no markings or damage. I've read it once and kept it on my shelf since. It's a must-read for anyone interested in understanding their relationship with money.\n\nThe book has been stored in a smoke-free, pet-free home. All pages are intact and the spine is in perfect condition. Happy to answer any questions about the book's condition or content!`,
-        ownerId: "owner1",
-        ownerName: "Sarah Johnson",
-        ownerRating: 4.8,
-        ownerLocation: "San Francisco, CA",
-        ownerExchangeCount: 47,
-        ownerVerified: true,
-        publishedYear: 2020,
-        isbn: "978-0857197689",
-        language: "English",
-        pages: 256
+    // Find the book from shared data
+    // Cast mockBooks to SourceBook[] because it's imported from a file that uses that type
+    const foundBook = (mockBooks as unknown as SourceBook[]).find(b => b.id === bookId);
+
+    // Fallback if book not found (shouldn't happen in normal flow)
+    const sourceBook = foundBook || (mockBooks[0] as unknown as SourceBook);
+
+    // Map SourceBook (nested owner) to DetailBook (flat owner)
+    const book: DetailBook = {
+        id: sourceBook.id,
+        title: sourceBook.title,
+        author: sourceBook.author,
+        genre: sourceBook.genre,
+        condition: sourceBook.condition as any,
+        status: sourceBook.status as any,
+        imageUrl: sourceBook.imageUrl,
+        imageAlt: sourceBook.imageAlt,
+        description: sourceBook.description,
+        ownerNotes: sourceBook.description, // Fallback
+        ownerId: sourceBook.owner.id,
+        ownerName: sourceBook.owner.name,
+        ownerRating: sourceBook.owner.rating,
+        ownerLocation: sourceBook.owner.location,
+        ownerExchangeCount: 15, // Mock data
+        ownerVerified: true, // Mock data
+        publishedYear: 2021, // Mock data
+        isbn: '978-3-16-148410-0', // Mock data
+        language: 'English', // Mock data
+        pages: 320 // Mock data
     };
 
     const mockSimilarBooks: SimilarBook[] = [
@@ -172,13 +185,13 @@ const BookDetails = () => {
                 }
 
                 <div className="flex flex-col lg:flex-row gap-8">
-                    <BookCover book={mockBook} />
+                    <BookCover book={book} />
 
                     <div className="flex-1 space-y-6">
-                        <BookInfo book={mockBook} />
+                        <BookInfo book={book} />
 
                         <div className="flex flex-col sm:flex-row gap-3">
-                            {mockBook.status === 'Available' ?
+                            {book.status === 'Available' ?
                                 <Button
                                     variant="default"
                                     size="lg"
@@ -212,20 +225,20 @@ const BookDetails = () => {
                             </Button>
                         </div>
 
-                        <OwnerProfile book={mockBook} />
-                        <BookDescription book={mockBook} />
+                        <OwnerProfile book={book} />
+                        <BookDescription book={book} />
                     </div>
                 </div>
 
                 <SimilarBooks books={mockSimilarBooks} />
-                <OwnerOtherBooks books={mockOwnerBooks} ownerName={mockBook.ownerName} />
+                <OwnerOtherBooks books={mockOwnerBooks} ownerName={book.ownerName} />
             </main>
 
             <ExchangeRequestModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleExchangeRequest}
-                bookTitle={mockBook.title} />
+                bookTitle={book.title} />
 
         </div>);
 

@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
 const NewHomePage = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
@@ -89,6 +90,24 @@ const NewHomePage = () => {
     { number: '100+', label: 'Cities Covered' }
   ];
 
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.append('search', searchQuery);
+    if (selectedCategory && selectedCategory !== 'all') params.append('category', selectedCategory);
+
+    navigate(`/browse-books?${params.toString()}`);
+    navigate(`/browse-books?${params.toString()}`);
+  };
+
+  const handleNavigation = (path: string) => {
+    const isAuthenticated = !!localStorage.getItem('accessToken');
+    if (isAuthenticated) {
+      navigate(path);
+    } else {
+      navigate('/register');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -124,6 +143,7 @@ const NewHomePage = () => {
                     placeholder="Search by title, author, or ISBN"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                     className="
       w-full
       h-14
@@ -178,7 +198,10 @@ const NewHomePage = () => {
                 </div>
 
 
-                <button className="bg-primary text-white px-8 py-3 rounded-lg hover:bg-primary/90 whitespace-nowrap">
+                <button
+                  onClick={handleSearch}
+                  className="bg-primary text-white px-8 py-3 rounded-lg hover:bg-primary/90 whitespace-nowrap"
+                >
                   <i className="ri-search-line mr-2"></i>
                   Search Books
                 </button>
@@ -256,7 +279,10 @@ const NewHomePage = () => {
                       </div>
                       <span className="text-sm text-gray-600">{book.owner}</span>
                     </div>
-                    <button className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 text-sm whitespace-nowrap">
+                    <button
+                      onClick={() => handleNavigation('/browse-books')}
+                      className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 text-sm whitespace-nowrap"
+                    >
                       Request Exchange
                     </button>
                   </div>
@@ -266,6 +292,7 @@ const NewHomePage = () => {
           </div>
           <div className="text-center mt-12">
             <button
+              onClick={() => handleNavigation('/browse-books')}
               className="bg-primary text-white px-8 py-3 rounded-lg hover:bg-primary/90 whitespace-nowrap"
             >
               View All Books
@@ -275,7 +302,7 @@ const NewHomePage = () => {
       </section>
 
       {/* How It Works */}
-      <section className="py-16 bg-background">
+      <section id="how-it-works" className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h3 className="text-3xl font-pacifico font-bold text-gray-900 mb-4">How BookSwap Hub Works</h3>
@@ -389,24 +416,24 @@ const NewHomePage = () => {
               <h5 className="font-semibold mb-4">Platform</h5>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <span className="hover:text-white cursor-pointer">
+                  <Link to="/browse-books" className="hover:text-white cursor-pointer transition-colors">
                     Browse Books
-                  </span>
+                  </Link>
                 </li>
                 <li>
-                  <span className="hover:text-white cursor-pointer">
+                  <Link to="/my-books" className="hover:text-white cursor-pointer transition-colors">
                     List a Book
-                  </span>
+                  </Link>
                 </li>
                 <li>
-                  <span className="hover:text-white cursor-pointer">
+                  <a href="#how-it-works" className="hover:text-white cursor-pointer transition-colors">
                     How It Works
-                  </span>
+                  </a>
                 </li>
                 <li>
-                  <span className="hover:text-white cursor-pointer">
+                  <Link to="/about" className="hover:text-white cursor-pointer transition-colors">
                     Community
-                  </span>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -414,24 +441,24 @@ const NewHomePage = () => {
               <h5 className="font-semibold mb-4">Support</h5>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <span className="hover:text-white cursor-pointer">
+                  <Link to="/contact" className="hover:text-white cursor-pointer transition-colors">
                     Help Center
-                  </span>
+                  </Link>
                 </li>
                 <li>
-                  <span className="hover:text-white cursor-pointer">
+                  <Link to="/about" className="hover:text-white cursor-pointer transition-colors">
                     Safety Guidelines
-                  </span>
+                  </Link>
                 </li>
                 <li>
-                  <span className="hover:text-white cursor-pointer">
+                  <Link to="/contact" className="hover:text-white cursor-pointer transition-colors">
                     Contact Us
-                  </span>
+                  </Link>
                 </li>
                 <li>
-                  <span className="hover:text-white cursor-pointer">
+                  <Link to="/contact" className="hover:text-white cursor-pointer transition-colors">
                     Feedback
-                  </span>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -439,19 +466,19 @@ const NewHomePage = () => {
               <h5 className="font-semibold mb-4">Legal</h5>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <span className="hover:text-white cursor-pointer">
+                  <Link to="#" className="hover:text-white cursor-pointer transition-colors">
                     Privacy Policy
-                  </span>
+                  </Link>
                 </li>
                 <li>
-                  <span className="hover:text-white cursor-pointer">
+                  <Link to="#" className="hover:text-white cursor-pointer transition-colors">
                     Terms of Service
-                  </span>
+                  </Link>
                 </li>
                 <li>
-                  <span className="hover:text-white cursor-pointer">
+                  <Link to="#" className="hover:text-white cursor-pointer transition-colors">
                     Cookie Policy
-                  </span>
+                  </Link>
                 </li>
               </ul>
             </div>

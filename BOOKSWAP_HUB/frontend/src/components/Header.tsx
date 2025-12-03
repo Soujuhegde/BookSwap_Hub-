@@ -15,6 +15,8 @@ const Header = ({ isAuthenticated = false, notificationCount = 0, onLogout }: He
   const navigate = useNavigate();
 
   const navigationItems = [
+    { label: 'Home', path: '/', icon: 'Home', public: true },
+    { label: 'My Dashboard', path: '/dashboard', icon: 'LayoutDashboard', requiresAuth: true },
     { label: 'Browse Books', path: '/browse-books', icon: 'BookOpen', public: true },
     { label: 'My Books', path: '/my-books', icon: 'Library', requiresAuth: true },
     { label: 'Exchanges', path: '/exchange-requests', icon: 'Repeat', requiresAuth: true, hasNotification: true },
@@ -56,7 +58,7 @@ const Header = ({ isAuthenticated = false, notificationCount = 0, onLogout }: He
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-8">
           {filteredNavItems.map((item) => (
             <Link
               key={item.path}
@@ -72,17 +74,48 @@ const Header = ({ isAuthenticated = false, notificationCount = 0, onLogout }: He
               )}
             </Link>
           ))}
-        </nav>
 
-        <div className="hidden md:flex items-center gap-4">
           {isAuthenticated ? (
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-150 ease-out"
-            >
-              <Icon name="LogOut" size={18} />
-              <span>Logout</span>
-            </button>
+            <div className="relative group">
+              <Link to="/profile"
+                className="flex items-center gap-2 focus:outline-none"
+              >
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20 hover:bg-primary/20 transition-colors">
+                  <Icon name="User" size={20} />
+                </div>
+              </Link>
+
+              {/* Dropdown Menu */}
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 hidden group-hover:block animate-in fade-in zoom-in duration-200">
+                <div className="px-4 py-2 border-b border-gray-50 mb-2">
+                  <p className="text-sm font-bold text-gray-900">Soujanya S P</p>
+                  <p className="text-xs text-gray-500 truncate">soujanya@example.com</p>
+                </div>
+
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
+                >
+                  <Icon name="User" size={16} />
+                  View Profile
+                </Link>
+                <Link
+                  to="/my-books"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
+                >
+                  <Icon name="BookOpen" size={16} />
+                  My Books
+                </Link>
+                <div className="h-px bg-gray-50 my-2"></div>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
+                >
+                  <Icon name="LogOut" size={16} />
+                  Logout
+                </button>
+              </div>
+            </div>
           ) : (
             <>
               <Link
@@ -99,7 +132,7 @@ const Header = ({ isAuthenticated = false, notificationCount = 0, onLogout }: He
               </Link>
             </>
           )}
-        </div>
+        </nav>
 
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -132,13 +165,27 @@ const Header = ({ isAuthenticated = false, notificationCount = 0, onLogout }: He
 
             <div className="pt-4 mt-4 border-t border-border">
               {isAuthenticated ? (
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-3 w-full px-4 py-3 text-left text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-all duration-150 ease-out"
-                >
-                  <Icon name="LogOut" size={20} />
-                  <span>Logout</span>
-                </button>
+                <>
+                  <div className="px-4 py-2 mb-2">
+                    <p className="text-sm font-bold text-gray-900">Soujanya S P</p>
+                    <p className="text-xs text-gray-500">soujanya@example.com</p>
+                  </div>
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 w-full px-4 py-3 text-left text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-all duration-150 ease-out"
+                  >
+                    <Icon name="User" size={20} />
+                    <span>View Profile</span>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 rounded-md transition-all duration-150 ease-out"
+                  >
+                    <Icon name="LogOut" size={20} />
+                    <span>Logout</span>
+                  </button>
+                </>
               ) : (
                 <>
                   <Link

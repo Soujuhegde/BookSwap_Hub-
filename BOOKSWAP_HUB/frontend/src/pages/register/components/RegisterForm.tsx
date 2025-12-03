@@ -19,7 +19,6 @@ const RegisterForm = () => {
         password: '',
         confirmPassword: '',
         agreeToTerms: false,
-        agreeToPrivacy: false,
     });
 
     const [errors, setErrors] = useState<ValidationErrors>({});
@@ -63,11 +62,7 @@ const RegisterForm = () => {
         }
 
         if (!formData.agreeToTerms) {
-            newErrors.agreeToTerms = 'You must agree to the Terms of Service';
-        }
-
-        if (!formData.agreeToPrivacy) {
-            newErrors.agreeToPrivacy = 'You must agree to the Privacy Policy';
+            newErrors.agreeToTerms = 'You must agree to the Terms of Service and Privacy Policy';
         }
 
         setErrors(newErrors);
@@ -92,6 +87,14 @@ const RegisterForm = () => {
                 setIsLoading(false);
                 return;
             }
+
+            // Save registered user to localStorage for login
+            const registeredUser = {
+                email: formData.email,
+                password: formData.password,
+                fullName: formData.fullName
+            };
+            localStorage.setItem('registeredUser', JSON.stringify(registeredUser));
 
             setShowSuccessModal(true);
         } catch (error) {
@@ -176,17 +179,9 @@ const RegisterForm = () => {
 
                 <div className="space-y-3 pt-2">
                     <TermsCheckbox
-                        type="terms"
                         checked={formData.agreeToTerms}
                         onChange={(checked) => handleInputChange('agreeToTerms', checked)}
                         error={errors.agreeToTerms}
-                    />
-
-                    <TermsCheckbox
-                        type="privacy"
-                        checked={formData.agreeToPrivacy}
-                        onChange={(checked) => handleInputChange('agreeToPrivacy', checked)}
-                        error={errors.agreeToPrivacy}
                     />
                 </div>
 

@@ -47,7 +47,7 @@ const BookCard = ({ book, onEdit, onDelete, onStatusChange, isSelected, onSelect
   };
 
   return (
-    <div className="relative bg-card border border-border rounded-lg overflow-hidden transition-all duration-150 ease-out hover:shadow-lg group">
+    <div className="relative bg-card border border-border rounded-lg transition-all duration-150 ease-out hover:shadow-lg group">
       <div className="absolute top-3 left-3 z-10">
         <input
           type="checkbox"
@@ -58,7 +58,7 @@ const BookCard = ({ book, onEdit, onDelete, onStatusChange, isSelected, onSelect
         />
       </div>
 
-      <div className="relative h-64 overflow-hidden bg-muted">
+      <div className="relative h-64 overflow-hidden bg-muted rounded-t-lg">
         <Image
           src={book.imageUrl}
           alt={book.imageAlt}
@@ -114,39 +114,40 @@ const BookCard = ({ book, onEdit, onDelete, onStatusChange, isSelected, onSelect
           >
             Edit
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            iconName="MoreVertical"
-            onClick={() => setShowActions(!showActions)}
-            aria-label="More actions"
-          />
-        </div>
-
-        {showActions && (
-          <div className="absolute right-4 bottom-20 bg-popover border border-border rounded-lg shadow-lg p-2 z-20 min-w-[160px]">
-            <button
-              onClick={() => {
-                onStatusChange(book.id, book.status === 'available' ? 'unavailable' : 'available');
-                setShowActions(false);
-              }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors duration-150 ease-out"
-            >
-              <Icon name={book.status === 'available' ? 'EyeOff' : 'Eye'} size={16} />
-              <span>{book.status === 'available' ? 'Mark Unavailable' : 'Mark Available'}</span>
-            </button>
-            <button
-              onClick={() => {
-                onDelete(book.id);
-                setShowActions(false);
-              }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-error hover:bg-error/10 rounded-md transition-colors duration-150 ease-out"
-            >
-              <Icon name="Trash2" size={16} />
-              <span>Delete Book</span>
-            </button>
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              iconName="MoreVertical"
+              onClick={() => setShowActions(!showActions)}
+              aria-label="More actions"
+            />
+            {showActions && (
+              <div className="absolute right-0 bottom-full mb-2 bg-background border border-border rounded-lg shadow-xl p-1 z-50 w-48">
+                <button
+                  onClick={() => {
+                    onStatusChange(book.id, book.status === 'available' ? 'unavailable' : 'available');
+                    setShowActions(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md transition-colors duration-150 ease-out whitespace-nowrap"
+                >
+                  <Icon name={book.status === 'available' ? 'EyeOff' : 'Eye'} size={16} />
+                  <span>{book.status === 'available' ? 'Mark Unavailable' : 'Mark Available'}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    onDelete(book.id);
+                    setShowActions(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-error hover:bg-error/10 rounded-md transition-colors duration-150 ease-out whitespace-nowrap"
+                >
+                  <Icon name="Trash2" size={16} />
+                  <span>Delete Book</span>
+                </button>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
