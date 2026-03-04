@@ -13,6 +13,8 @@ import ExchangeRequestModal from './components/ExchangeRequestModal';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
 import { mockBooks } from '../../data/mockBooks';
+import { useWishlist } from '../../context/WishlistContext';
+import { useAuth } from '../../context/AuthContext';
 
 const BookDetails = () => {
     const navigate = useNavigate();
@@ -22,9 +24,10 @@ const BookDetails = () => {
     // Get bookId from location state (preferred) or URL params
     const bookId = location.state?.bookId || searchParams.get('id') || '1';
 
-    const [isAuthenticated] = useState(true);
+    const { isAuthenticated } = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const { toggleWishlist, isInWishlist } = useWishlist();
 
     // Find the book from shared data
     // Cast mockBooks to SourceBook[] because it's imported from a file that uses that type
@@ -154,14 +157,9 @@ const BookDetails = () => {
         setIsModalOpen(true);
     };
 
-    const handleLogout = () => {
-        console.log('User logged out');
-        navigate('/login');
-    };
-
     return (
         <div className="min-h-screen bg-background">
-            <Header isAuthenticated={isAuthenticated} notificationCount={3} onLogout={handleLogout} />
+            <Header notificationCount={3} />
 
             <main className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8">
                 <button
@@ -215,13 +213,14 @@ const BookDetails = () => {
                                 </Button>
                             }
                             <Button
-                                variant="outline"
+                                variant={isInWishlist(book.id) ? "default" : "outline"}
                                 size="lg"
                                 iconName="Heart"
                                 iconPosition="left"
-                                className="sm:w-auto">
-
-                                Save
+                                className="sm:w-auto"
+                                onClick={() => toggleWishlist(book as any)}
+                            >
+                                {isInWishlist(book.id) ? "Saved" : "Save"}
                             </Button>
                         </div>
 

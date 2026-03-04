@@ -1,10 +1,9 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { ExchangeStatus } from '../exchange.entity';
+import { IsIn, IsOptional, IsString } from 'class-validator';
 
 export class UpdateExchangeDto {
-  @IsEnum(ExchangeStatus)
+  @IsIn(['pending', 'accepted', 'rejected', 'completed', 'cancelled'])
   @IsOptional()
-  status?: ExchangeStatus;
+  status?: string;
 
   @IsString()
   @IsOptional()

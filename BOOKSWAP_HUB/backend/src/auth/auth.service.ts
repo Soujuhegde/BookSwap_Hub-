@@ -9,7 +9,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async register(registerDto: RegisterDto) {
     const user = await this.usersService.create(registerDto);
@@ -30,9 +30,11 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
+    console.log(`Login attempt for ${loginDto.email}`);
     const user = await this.usersService.findByEmail(loginDto.email);
 
     if (!user) {
+      console.log('User not found');
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -40,6 +42,7 @@ export class AuthService {
       loginDto.password,
       user.password,
     );
+    console.log(`Password valid: ${isPasswordValid}`);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');

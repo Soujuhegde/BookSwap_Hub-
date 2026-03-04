@@ -1,4 +1,0 @@
-src/pages/browse-books/components/BookGridSkeleton.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
-src/pages/register/index.tsx(16,9): error TS6133: 'navigate' is declared but its value is never read.
-src/pages/register/index.tsx(114,9): error TS7053: Element implicitly has an 'any' type because expression of type 'keyof RegisterFormData' can't be used to index type 'ValidationErrors'.
-  Property 'readingInterests' does not exist on type 'ValidationErrors'.

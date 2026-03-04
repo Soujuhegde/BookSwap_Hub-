@@ -36,7 +36,7 @@ const Checkbox = React.forwardRef < HTMLInputElement, CheckboxProps> (({
     };
 
     return (
-        <div className={cn("flex items-start space-x-2", className)}>
+        <div className={cn("flex items-center space-x-2", className)}>
             <div className="relative flex items-center">
                 <input
                     type="checkbox"
@@ -52,7 +52,7 @@ const Checkbox = React.forwardRef < HTMLInputElement, CheckboxProps> (({
                 <label
                     htmlFor={checkboxId}
                     className={cn(
-                        "peer shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground cursor-pointer transition-colors",
+                        "peer flex items-center justify-center shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground cursor-pointer transition-colors",
                         sizeClasses[size],
                         checked && "bg-primary text-primary-foreground border-primary",
                         indeterminate && "bg-primary text-primary-foreground border-primary",
@@ -61,10 +61,10 @@ const Checkbox = React.forwardRef < HTMLInputElement, CheckboxProps> (({
                     )}
                 >
                     {checked && !indeterminate && (
-                        <Check className="h-3 w-3 text-current flex items-center justify-center" />
+                        <Check className="h-3.5 w-3.5 text-current" />
                     )}
                     {indeterminate && (
-                        <Minus className="h-3 w-3 text-current flex items-center justify-center" />
+                        <Minus className="h-3.5 w-3.5 text-current" />
                     )}
                 </label>
             </div>

@@ -4,29 +4,22 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Exchange, ExchangeStatus } from './exchange.entity';
+import { PrismaService } from '../prisma/prisma.service';
+import { Exchange } from '../../prisma/client';
 import { CreateExchangeDto } from './dto/create-exchange.dto';
 import { UpdateExchangeDto } from './dto/update-exchange.dto';
-import { Book, BookStatus } from '../bookswap/book.entity';
 
 @Injectable()
 export class ExchangesService {
-  constructor(
-    @InjectRepository(Exchange)
-    private exchangesRepository: Repository<Exchange>,
-    @InjectRepository(Book)
-    private booksRepository: Repository<Book>,
-  ) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(
     createExchangeDto: CreateExchangeDto,
     userId: string,
   ): Promise<Exchange> {
-    const requestedBook = await this.booksRepository.findOne({
+    const requestedBook = await this.prisma.book.findUnique({
       where: { id: createExchangeDto.requestedBookId },
-      relations: ['owner'],
+      include: { owner: true },
     });
 
     if (!requestedBook) {
@@ -37,13 +30,13 @@ export class ExchangesService {
       throw new BadRequestException('You cannot request your own book');
     }
 
-    if (requestedBook.status !== BookStatus.AVAILABLE) {
+    if (requestedBook.status !== 'available') {
       throw new BadRequestException('Book is not available for exchange');
     }
 
     // Check if offered book exists and belongs to requester
     if (createExchangeDto.offeredBookId) {
-      const offeredBook = await this.booksRepository.findOne({
+      const offeredBook = await this.prisma.book.findUnique({
         where: { id: createExchangeDto.offeredBookId },
       });
 
@@ -56,44 +49,66 @@ export class ExchangesService {
       }
     }
 
-    const exchange = this.exchangesRepository.create({
-      ...createExchangeDto,
-      requesterId: userId,
-      ownerId: requestedBook.ownerId,
-      status: ExchangeStatus.PENDING,
+    return this.prisma.exchange.create({
+      data: {
+        ...createExchangeDto,
+        requesterId: userId,
+        ownerId: requestedBook.ownerId,
+        status: 'pending',
+      },
     });
-
-    return this.exchangesRepository.save(exchange);
   }
 
   async findAll(userId: string): Promise<Exchange[]> {
-    return this.exchangesRepository.find({
-      where: [{ requesterId: userId }, { ownerId: userId }],
-      relations: ['requester', 'owner', 'requestedBook', 'offeredBook'],
-      order: { createdAt: 'DESC' },
+    return this.prisma.exchange.findMany({
+      where: {
+        OR: [{ requesterId: userId }, { ownerId: userId }],
+      },
+      include: {
+        requester: true,
+        owner: true,
+        requestedBook: true,
+        offeredBook: true,
+      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   async findSent(userId: string): Promise<Exchange[]> {
-    return this.exchangesRepository.find({
+    return this.prisma.exchange.findMany({
       where: { requesterId: userId },
-      relations: ['requester', 'owner', 'requestedBook', 'offeredBook'],
-      order: { createdAt: 'DESC' },
+      include: {
+        requester: true,
+        owner: true,
+        requestedBook: true,
+        offeredBook: true,
+      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   async findReceived(userId: string): Promise<Exchange[]> {
-    return this.exchangesRepository.find({
+    return this.prisma.exchange.findMany({
       where: { ownerId: userId },
-      relations: ['requester', 'owner', 'requestedBook', 'offeredBook'],
-      order: { createdAt: 'DESC' },
+      include: {
+        requester: true,
+        owner: true,
+        requestedBook: true,
+        offeredBook: true,
+      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   async findOne(id: string, userId: string): Promise<Exchange> {
-    const exchange = await this.exchangesRepository.findOne({
+    const exchange = await this.prisma.exchange.findUnique({
       where: { id },
-      relations: ['requester', 'owner', 'requestedBook', 'offeredBook'],
+      include: {
+        requester: true,
+        owner: true,
+        requestedBook: true,
+        offeredBook: true,
+      },
     });
 
     if (!exchange) {
@@ -120,47 +135,50 @@ export class ExchangesService {
       );
     }
 
-    if (exchange.status !== ExchangeStatus.PENDING) {
+    if (exchange.status !== 'pending') {
       throw new BadRequestException(
         'Can only update pending exchange requests',
       );
     }
 
     // If accepting, update book status
-    if (updateExchangeDto.status === ExchangeStatus.ACCEPTED) {
-      await this.booksRepository.update(
-        { id: exchange.requestedBookId },
-        { status: BookStatus.PENDING },
-      );
+    if (updateExchangeDto.status === 'accepted') {
+      await this.prisma.book.update({
+        where: { id: exchange.requestedBookId },
+        data: { status: 'pending' },
+      });
     }
 
-    Object.assign(exchange, updateExchangeDto);
-    return this.exchangesRepository.save(exchange);
+    return this.prisma.exchange.update({
+      where: { id },
+      data: updateExchangeDto,
+    });
   }
 
   async complete(id: string, userId: string): Promise<Exchange> {
     const exchange = await this.findOne(id, userId);
 
-    if (exchange.status !== ExchangeStatus.ACCEPTED) {
+    if (exchange.status !== 'accepted') {
       throw new BadRequestException('Only accepted exchanges can be completed');
     }
 
-    exchange.status = ExchangeStatus.COMPLETED;
-
     // Update book statuses
-    await this.booksRepository.update(
-      { id: exchange.requestedBookId },
-      { status: BookStatus.EXCHANGED },
-    );
+    await this.prisma.book.update({
+      where: { id: exchange.requestedBookId },
+      data: { status: 'exchanged' },
+    });
 
     if (exchange.offeredBookId) {
-      await this.booksRepository.update(
-        { id: exchange.offeredBookId },
-        { status: BookStatus.EXCHANGED },
-      );
+      await this.prisma.book.update({
+        where: { id: exchange.offeredBookId },
+        data: { status: 'exchanged' },
+      });
     }
 
-    return this.exchangesRepository.save(exchange);
+    return this.prisma.exchange.update({
+      where: { id },
+      data: { status: 'completed' },
+    });
   }
 
   async cancel(id: string, userId: string): Promise<Exchange> {
@@ -171,24 +189,25 @@ export class ExchangesService {
     }
 
     if (
-      exchange.status === ExchangeStatus.COMPLETED ||
-      exchange.status === ExchangeStatus.CANCELLED
+      exchange.status === 'completed' ||
+      exchange.status === 'cancelled'
     ) {
       throw new BadRequestException('Cannot cancel this exchange');
     }
 
     // If it was accepted, make book available again
-    const wasAccepted = exchange.status === ExchangeStatus.ACCEPTED;
-
-    exchange.status = ExchangeStatus.CANCELLED;
+    const wasAccepted = exchange.status === 'accepted';
 
     if (wasAccepted) {
-      await this.booksRepository.update(
-        { id: exchange.requestedBookId },
-        { status: BookStatus.AVAILABLE },
-      );
+      await this.prisma.book.update({
+        where: { id: exchange.requestedBookId },
+        data: { status: 'available' },
+      });
     }
 
-    return this.exchangesRepository.save(exchange);
+    return this.prisma.exchange.update({
+      where: { id },
+      data: { status: 'cancelled' },
+    });
   }
 }

@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/Header';
 import AuthenticationToggle from '../../components/ui/AuthenticationToggle';
 import LoginForm from './components/LoginForm';
@@ -7,14 +7,26 @@ import LoginHero from './components/LoginHero';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleLoginSuccess = () => {
+  const handleLoginSuccess = (response: any) => {
+    const { user } = response;
+    // Map backend user to context user
+    const contextUser = {
+      id: user.id,
+      name: user.fullName || user.name, // Handle backend vs frontend naming
+      email: user.email,
+      avatar: user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || user.name)}&background=random`,
+      phone: user.phone,
+      address: user.address
+    };
+    login(contextUser);
     navigate('/dashboard', { replace: true });
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Header isAuthenticated={false} onLogout={() => { }} />
+      <Header />
 
       <main className="flex-1 flex">
         <div className="flex-1 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">

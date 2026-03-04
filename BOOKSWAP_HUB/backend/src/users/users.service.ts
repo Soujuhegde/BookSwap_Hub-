@@ -1,15 +1,11 @@
 import { Injectable, ConflictException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from './user.entity';
+import { PrismaService } from '../prisma/prisma.service';
+import { User } from '../../prisma/client';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectRepository(User)
-    private usersRepository: Repository<User>,
-  ) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(userData: {
     email: string;
@@ -18,7 +14,7 @@ export class UsersService {
     phone?: string;
     address?: string;
   }): Promise<User> {
-    const existingUser = await this.usersRepository.findOne({
+    const existingUser = await this.prisma.user.findUnique({
       where: { email: userData.email },
     });
 
@@ -28,20 +24,20 @@ export class UsersService {
 
     const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-    const user = this.usersRepository.create({
-      ...userData,
-      password: hashedPassword,
+    return this.prisma.user.create({
+      data: {
+        ...userData,
+        password: hashedPassword,
+      },
     });
-
-    return this.usersRepository.save(user);
   }
 
   async findOne(id: string): Promise<User> {
-    return this.usersRepository.findOne({ where: { id } });
+    return this.prisma.user.findUnique({ where: { id } });
   }
 
   async findByEmail(email: string): Promise<User> {
-    return this.usersRepository.findOne({ where: { email } });
+    return this.prisma.user.findUnique({ where: { email } });
   }
 
   async validatePassword(

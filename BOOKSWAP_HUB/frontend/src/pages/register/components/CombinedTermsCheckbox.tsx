@@ -9,11 +9,10 @@ interface CombinedTermsCheckboxProps {
 const CombinedTermsCheckbox = ({ checked, onChange, error }: CombinedTermsCheckboxProps) => {
     return (
         <div className="space-y-1">
-            <div className="flex items-start gap-2">
+            <div className="flex items-center gap-2">
                 <Checkbox
                     checked={checked}
                     onChange={(e) => onChange(e.target.checked)}
-                    className="mt-0.5"
                 />
                 <label className="text-sm text-foreground cursor-pointer select-none">
                     I agree to the{' '}

@@ -1,8 +1,7 @@
 import React from 'react';
 import * as LucideIcons from 'lucide-react';
-import { HelpCircle, LucideProps } from 'lucide-react';
 
-interface IconProps extends Omit<LucideProps, 'size'> {
+interface IconProps extends Omit<LucideIcons.LucideProps, 'size'> {
     name: string | keyof typeof LucideIcons;
     size?: number;
     color?: string;
@@ -20,11 +19,11 @@ function Icon({
 }: IconProps) {
     const formattedName = typeof name === 'string' ? name.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('')
         : name;
-    const IconComponent = LucideIcons[formattedName as keyof typeof LucideIcons] as React.ComponentType<LucideProps>;
+    const IconComponent = LucideIcons[formattedName as keyof typeof LucideIcons] as React.ComponentType<LucideIcons.LucideProps>;
 
     if (!IconComponent) {
         return (
-            <HelpCircle
+            <LucideIcons.HelpCircle
                 size={size}
                 color="gray"
                 strokeWidth={strokeWidth}

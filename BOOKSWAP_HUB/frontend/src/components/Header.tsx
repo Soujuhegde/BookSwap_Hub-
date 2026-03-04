@@ -1,18 +1,18 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Icon from './AppIcon';
 import NotificationBadge from './ui/NotificationBadge';
+import { useAuth } from '../context/AuthContext';
 
 interface HeaderProps {
-  isAuthenticated?: boolean;
   notificationCount?: number;
-  onLogout?: () => void;
 }
 
-const Header = ({ isAuthenticated = false, notificationCount = 0, onLogout }: HeaderProps) => {
+const Header = ({ notificationCount = 0 }: HeaderProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
+
+  const { isAuthenticated, logout, user } = useAuth();
 
   const navigationItems = [
     { label: 'Home', path: '/', icon: 'Home', public: true },
@@ -20,15 +20,14 @@ const Header = ({ isAuthenticated = false, notificationCount = 0, onLogout }: He
     { label: 'Browse Books', path: '/browse-books', icon: 'BookOpen', public: true },
     { label: 'My Books', path: '/my-books', icon: 'Library', requiresAuth: true },
     { label: 'Exchanges', path: '/exchange-requests', icon: 'Repeat', requiresAuth: true, hasNotification: true },
+    { label: 'Messages', path: '/messages', icon: 'MessageSquare', requiresAuth: true, hasNotification: true },
+    { label: 'Wishlist', path: '/wishlist', icon: 'Heart', requiresAuth: true },
   ];
 
   const isActivePath = (path: string) => location.pathname === path;
 
   const handleLogout = () => {
-    if (onLogout) {
-      onLogout();
-    }
-    navigate('/login');
+    logout();
     setIsMobileMenuOpen(false);
   };
 
@@ -40,6 +39,7 @@ const Header = ({ isAuthenticated = false, notificationCount = 0, onLogout }: He
     if (isAuthPage && item.path === '/browse-books') {
       return false;
     }
+    // @ts-ignore - item.public is not strictly typed but exists in the array
     return item.public || (item.requiresAuth && isAuthenticated);
   });
 
@@ -69,6 +69,7 @@ const Header = ({ isAuthenticated = false, notificationCount = 0, onLogout }: He
             >
               <Icon name={item.icon} size={18} />
               <span>{item.label}</span>
+              {/* @ts-ignore - hasNotification is optional */}
               {item.hasNotification && notificationCount > 0 && (
                 <NotificationBadge count={notificationCount} />
               )}
@@ -80,16 +81,20 @@ const Header = ({ isAuthenticated = false, notificationCount = 0, onLogout }: He
               <Link to="/profile"
                 className="flex items-center gap-2 focus:outline-none"
               >
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20 hover:bg-primary/20 transition-colors">
-                  <Icon name="User" size={20} />
-                </div>
+                {user?.avatar ? (
+                  <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover border border-primary/20 hover:opacity-80 transition-opacity" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20 hover:bg-primary/20 transition-colors">
+                    <Icon name="User" size={20} />
+                  </div>
+                )}
               </Link>
 
               {/* Dropdown Menu */}
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 hidden group-hover:block animate-in fade-in zoom-in duration-200">
                 <div className="px-4 py-2 border-b border-gray-50 mb-2">
-                  <p className="text-sm font-bold text-gray-900">Soujanya S P</p>
-                  <p className="text-xs text-gray-500 truncate">soujanya@example.com</p>
+                  <p className="text-sm font-bold text-gray-900">{user?.name || 'User'}</p>
+                  <p className="text-xs text-gray-500 truncate">{user?.email || 'user@example.com'}</p>
                 </div>
 
                 <Link
@@ -157,6 +162,7 @@ const Header = ({ isAuthenticated = false, notificationCount = 0, onLogout }: He
               >
                 <Icon name={item.icon} size={20} />
                 <span>{item.label}</span>
+                {/* @ts-ignore */}
                 {item.hasNotification && notificationCount > 0 && (
                   <NotificationBadge count={notificationCount} />
                 )}
@@ -167,8 +173,8 @@ const Header = ({ isAuthenticated = false, notificationCount = 0, onLogout }: He
               {isAuthenticated ? (
                 <>
                   <div className="px-4 py-2 mb-2">
-                    <p className="text-sm font-bold text-gray-900">Soujanya S P</p>
-                    <p className="text-xs text-gray-500">soujanya@example.com</p>
+                    <p className="text-sm font-bold text-gray-900">{user?.name || 'User'}</p>
+                    <p className="text-xs text-gray-500">{user?.email || 'user@example.com'}</p>
                   </div>
                   <Link
                     to="/profile"

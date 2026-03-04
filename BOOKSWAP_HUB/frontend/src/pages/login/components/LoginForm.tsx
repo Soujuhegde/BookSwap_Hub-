@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authApi } from '../../../lib/api';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 import { Checkbox } from '../../../components/ui/Checkbox';
@@ -19,10 +20,7 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
   const [errors, setErrors] = useState<LoginFormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const mockCredentials = {
-    email: 'user@bookswap.com',
-    password: 'BookSwap@123',
-  };
+
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -58,6 +56,7 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
     }
   };
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -68,57 +67,38 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
     setIsLoading(true);
     setErrors({});
 
-    setTimeout(() => {
-      const storedUser = localStorage.getItem('registeredUser');
-      let isRegisteredUser = false;
-      let registeredUserData = null;
+    try {
+      const response = await authApi.login({
+        email: formData.email,
+        password: formData.password,
+      });
 
-      if (storedUser) {
-        registeredUserData = JSON.parse(storedUser);
-        if (
-          formData.email === registeredUserData.email &&
-          formData.password === registeredUserData.password
-        ) {
-          isRegisteredUser = true;
-        }
+      const { access_token, user } = response.data;
+
+      localStorage.setItem('token', access_token);
+      localStorage.setItem('user', JSON.stringify(user));
+
+      if (formData.rememberMe) {
+        localStorage.setItem('rememberMe', 'true');
       }
 
-      if (
-        (formData.email === mockCredentials.email && formData.password === mockCredentials.password) ||
-        isRegisteredUser
-      ) {
-        const response: AuthResponse = {
-          success: true,
-          accessToken: 'mock-access-token-' + Date.now(),
-          refreshToken: 'mock-refresh-token-' + Date.now(),
-          user: {
-            id: isRegisteredUser ? 'user-new' : 'user-001',
-            email: formData.email,
-            name: isRegisteredUser ? registeredUserData.fullName : 'John Doe',
-          },
-        };
-
-        localStorage.setItem('accessToken', response.accessToken!);
-        localStorage.setItem('refreshToken', response.refreshToken!);
-        localStorage.setItem('user', JSON.stringify(response.user));
-
-        if (formData.rememberMe) {
-          localStorage.setItem('rememberMe', 'true');
-        }
-
-        if (onSuccess) {
-          onSuccess(response);
-        }
-
-        setIsLoading(false);
-        if (!onSuccess) navigate('/browse-books');
-      } else {
-        setErrors({
-          general: `Invalid credentials.`,
-        });
-        setIsLoading(false);
+      if (onSuccess) {
+        // Adapt response to match what onSuccess might expect if strictly typed, 
+        // or update types. Assuming onSuccess handles the result.
+        // @ts-ignore
+        onSuccess({ success: true, accessToken: access_token, user });
       }
-    }, 1500);
+
+      navigate('/browse-books');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      const errorMessage = err.response?.data?.message || 'Invalid email or password. Please try again.';
+      setErrors({
+        general: Array.isArray(errorMessage) ? errorMessage[0] : errorMessage,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleForgotPassword = () => {

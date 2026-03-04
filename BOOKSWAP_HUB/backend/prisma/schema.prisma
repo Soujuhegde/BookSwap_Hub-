@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://neondb_owner:npg_sriELS8jG0yl@ep-restless-butterfly-aioq8z8k-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require"
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  fullName      String
+  password      String
+  phone         String?
+  address       String?
+  isActive      Boolean        @default(true)
+  books         Book[]         @relation("UserBooks")
+  exchangesReq  Exchange[]     @relation("RequesterExchanges")
+  exchangesOwn  Exchange[]     @relation("OwnerExchanges")
+  messagesSent  Message[]      @relation("SentMessages")
+  messagesRecv  Message[]      @relation("ReceivedMessages")
+  notifications Notification[] @relation("UserNotifications")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@map("users")
+}
+
+model Book {
+  id              String         @id @default(uuid())
+  title           String
+  author          String
+  isbn            String?
+  description     String?
+  genre           String?
+  publisher       String?
+  publishYear     Int?
+  condition       String         @default("good")
+  status          String         @default("available")
+  imageUrl        String?
+  owner           User           @relation("UserBooks", fields: [ownerId], references: [id])
+  ownerId         String
+  exchangeRequested Exchange[]   @relation("RequestedBooks")
+  exchangeOffered   Exchange[]   @relation("OfferedBooks")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("books")
+}
+
+model Exchange {
+  id              String         @id @default(uuid())
+  requester       User           @relation("RequesterExchanges", fields: [requesterId], references: [id])
+  requesterId     String
+  owner           User           @relation("OwnerExchanges", fields: [ownerId], references: [id])
+  ownerId         String
+  requestedBook   Book           @relation("RequestedBooks", fields: [requestedBookId], references: [id])
+  requestedBookId String
+  offeredBook     Book?          @relation("OfferedBooks", fields: [offeredBookId], references: [id])
+  offeredBookId   String?
+  status          String         @default("pending")
+  message         String?
+  rejectionReason String?
+  messages        Message[]      @relation("ExchangeMessages")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("exchanges")
+}
+
+model Message {
+  id              String         @id @default(uuid())
+  exchange        Exchange       @relation("ExchangeMessages", fields: [exchangeId], references: [id])
+  exchangeId      String
+  sender          User           @relation("SentMessages", fields: [senderId], references: [id])
+  senderId        String
+  receiver        User           @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiverId      String
+  content         String
+  isRead          Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+
+  @@map("messages")
+}
+
+model Notification {
+  id              String         @id @default(uuid())
+  user            User           @relation("UserNotifications", fields: [userId], references: [id])
+  userId          String
+  type            String
+  title           String
+  message         String
+  link            String?
+  isRead          Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+
+  @@map("notifications")
+}

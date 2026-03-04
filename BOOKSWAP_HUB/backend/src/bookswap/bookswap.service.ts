@@ -1,37 +1,34 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Book, BookStatus } from './book.entity';
+import { PrismaService } from '../prisma/prisma.service';
+import { Book } from '../../prisma/client';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 
 @Injectable()
 export class BookswapService {
-  constructor(
-    @InjectRepository(Book)
-    private booksRepository: Repository<Book>,
-  ) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(createBookDto: CreateBookDto, userId: string): Promise<Book> {
-    const book = this.booksRepository.create({
-      ...createBookDto,
-      ownerId: userId,
+    return this.prisma.book.create({
+      data: {
+        ...createBookDto,
+        ownerId: userId,
+      },
     });
-    return this.booksRepository.save(book);
   }
 
   async findAll(): Promise<Book[]> {
-    return this.booksRepository.find({
-      where: { status: BookStatus.AVAILABLE },
-      relations: ['owner'],
-      order: { createdAt: 'DESC' },
+    return this.prisma.book.findMany({
+      where: { status: 'available' },
+      include: { owner: true },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   async findOne(id: string): Promise<Book> {
-    const book = await this.booksRepository.findOne({
+    const book = await this.prisma.book.findUnique({
       where: { id },
-      relations: ['owner'],
+      include: { owner: true },
     });
 
     if (!book) {
@@ -42,9 +39,9 @@ export class BookswapService {
   }
 
   async findByUser(userId: string): Promise<Book[]> {
-    return this.booksRepository.find({
+    return this.prisma.book.findMany({
       where: { ownerId: userId },
-      order: { createdAt: 'DESC' },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
@@ -59,8 +56,10 @@ export class BookswapService {
       throw new ForbiddenException('You can only update your own books');
     }
 
-    Object.assign(book, updateBookDto);
-    return this.booksRepository.save(book);
+    return this.prisma.book.update({
+      where: { id },
+      data: updateBookDto,
+    });
   }
 
   async remove(id: string, userId: string): Promise<void> {
@@ -70,19 +69,21 @@ export class BookswapService {
       throw new ForbiddenException('You can only delete your own books');
     }
 
-    await this.booksRepository.remove(book);
+    await this.prisma.book.delete({ where: { id } });
   }
 
   async search(query: string): Promise<Book[]> {
-    return this.booksRepository
-      .createQueryBuilder('book')
-      .where('book.status = :status', { status: BookStatus.AVAILABLE })
-      .andWhere(
-        '(book.title LIKE :query OR book.author LIKE :query OR book.genre LIKE :query)',
-        { query: `%${query}%` },
-      )
-      .leftJoinAndSelect('book.owner', 'owner')
-      .orderBy('book.createdAt', 'DESC')
-      .getMany();
+    return this.prisma.book.findMany({
+      where: {
+        status: 'available',
+        OR: [
+          { title: { contains: query, mode: 'insensitive' } },
+          { author: { contains: query, mode: 'insensitive' } },
+          { genre: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+      include: { owner: true },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 }

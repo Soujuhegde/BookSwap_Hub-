@@ -228,8 +228,8 @@ const ExchangeRequests = () => {
       message: 'I\'ve been wanting to read 1984. Interested in a dystopian novel exchange?',
       responseMessage: 'Sorry, I\'m currently reading this book. Maybe we can exchange later.',
       isRead: true
-    }];
-
+    }
+  ];
 
   const receivedRequests = mockRequests.filter((req) => req.owner.id === 'user-002');
   const sentRequests = mockRequests.filter((req) => req.requester.id === 'user-002');
@@ -296,7 +296,7 @@ const ExchangeRequests = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header isAuthenticated={true} notificationCount={unreadCount} onLogout={() => console.log('Logout clicked')} />
+      <Header notificationCount={unreadCount} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">

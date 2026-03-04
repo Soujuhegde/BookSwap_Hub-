@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { BookswapModule } from './bookswap/bookswap.module';
@@ -13,13 +13,7 @@ import { MessagesModule } from './messages/messages.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database: 'bookswap.db',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true, // Set to false in production
-      logging: true, // Enable logging to see what's happening
-    }),
+    PrismaModule,
     AuthModule,
     UsersModule,
     BookswapModule,
@@ -28,4 +22,4 @@ import { MessagesModule } from './messages/messages.module';
     MessagesModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

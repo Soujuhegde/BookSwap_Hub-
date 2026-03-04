@@ -22,6 +22,22 @@ export default {
           900: '#1c3f3a',
         },
         background: '#ffffff',
+        foreground: '#111827',
+        accent: {
+          DEFAULT: '#f59e0b',
+          foreground: '#ffffff',
+        },
+        success: '#22c55e',
+        warning: '#eab308',
+        error: '#ef4444',
+        card: '#ffffff',
+        border: '#e5e7eb',
+        input: '#e5e7eb',
+        ring: '#182e2c',
+        muted: {
+          DEFAULT: '#f3f4f6',
+          foreground: '#6b7280',
+        },
       },
       fontFamily: {
         pacifico: ['"Pacifico"', 'cursive'],

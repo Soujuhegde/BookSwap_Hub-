@@ -1,5 +1,4 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-import { BookCondition, BookStatus } from '../book.entity';
+import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateBookDto {
   @IsString()
@@ -30,13 +29,13 @@ export class CreateBookDto {
   @IsOptional()
   publishYear?: number;
 
-  @IsEnum(BookCondition)
+  @IsIn(['new', 'like_new', 'good', 'fair', 'poor'])
   @IsOptional()
-  condition?: BookCondition;
+  condition?: string;
 
-  @IsEnum(BookStatus)
+  @IsIn(['available', 'pending', 'exchanged'])
   @IsOptional()
-  status?: BookStatus;
+  status?: string;
 
   @IsString()
   @IsOptional()

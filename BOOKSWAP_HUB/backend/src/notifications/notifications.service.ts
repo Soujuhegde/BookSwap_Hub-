@@ -1,70 +1,68 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Notification, NotificationType } from './notification.entity';
+import { PrismaService } from '../prisma/prisma.service';
+import { Notification } from '../../prisma/client';
 
 @Injectable()
 export class NotificationsService {
-  constructor(
-    @InjectRepository(Notification)
-    private notificationsRepository: Repository<Notification>,
-  ) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(
     userId: string,
-    type: NotificationType,
+    type: string,
     title: string,
     message: string,
     link?: string,
   ): Promise<Notification> {
-    const notification = this.notificationsRepository.create({
-      userId,
-      type,
-      title,
-      message,
-      link,
+    return this.prisma.notification.create({
+      data: {
+        userId,
+        type,
+        title,
+        message,
+        link,
+      },
     });
-
-    return this.notificationsRepository.save(notification);
   }
 
   async findAll(userId: string): Promise<Notification[]> {
-    return this.notificationsRepository.find({
+    return this.prisma.notification.findMany({
       where: { userId },
-      order: { createdAt: 'DESC' },
+      orderBy: { createdAt: 'desc' },
       take: 50,
     });
   }
 
   async findUnread(userId: string): Promise<Notification[]> {
-    return this.notificationsRepository.find({
+    return this.prisma.notification.findMany({
       where: { userId, isRead: false },
-      order: { createdAt: 'DESC' },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   async markAsRead(id: string, userId: string): Promise<Notification> {
-    const notification = await this.notificationsRepository.findOne({
-      where: { id, userId },
+    const notification = await this.prisma.notification.findUnique({
+      where: { id },
     });
 
-    if (notification) {
-      notification.isRead = true;
-      return this.notificationsRepository.save(notification);
+    if (notification && notification.userId === userId) {
+      return this.prisma.notification.update({
+        where: { id },
+        data: { isRead: true },
+      });
     }
 
     return null;
   }
 
   async markAllAsRead(userId: string): Promise<void> {
-    await this.notificationsRepository.update(
-      { userId, isRead: false },
-      { isRead: true },
-    );
+    await this.prisma.notification.updateMany({
+      where: { userId, isRead: false },
+      data: { isRead: true },
+    });
   }
 
   async getUnreadCount(userId: string): Promise<number> {
-    return this.notificationsRepository.count({
+    return this.prisma.notification.count({
       where: { userId, isRead: false },
     });
   }

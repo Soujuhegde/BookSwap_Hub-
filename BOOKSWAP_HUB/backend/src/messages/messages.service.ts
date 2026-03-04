@@ -1,24 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Message } from './message.entity';
+import { PrismaService } from '../prisma/prisma.service';
+import { Message } from '../../prisma/client';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { Exchange } from '../exchanges/exchange.entity';
 
 @Injectable()
 export class MessagesService {
-  constructor(
-    @InjectRepository(Message)
-    private messagesRepository: Repository<Message>,
-    @InjectRepository(Exchange)
-    private exchangesRepository: Repository<Exchange>,
-  ) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(
     createMessageDto: CreateMessageDto,
     userId: string,
   ): Promise<Message> {
-    const exchange = await this.exchangesRepository.findOne({
+    const exchange = await this.prisma.exchange.findUnique({
       where: { id: createMessageDto.exchangeId },
     });
 
@@ -26,33 +19,30 @@ export class MessagesService {
       throw new NotFoundException('Exchange not found');
     }
 
-    const message = this.messagesRepository.create({
-      ...createMessageDto,
-      senderId: userId,
+    return this.prisma.message.create({
+      data: {
+        ...createMessageDto,
+        senderId: userId,
+      },
     });
-
-    return this.messagesRepository.save(message);
   }
 
   async findByExchange(exchangeId: string): Promise<Message[]> {
-    return this.messagesRepository.find({
+    return this.prisma.message.findMany({
       where: { exchangeId },
-      relations: ['sender', 'receiver'],
-      order: { createdAt: 'ASC' },
+      include: { sender: true, receiver: true },
+      orderBy: { createdAt: 'asc' },
     });
   }
 
   async findConversations(userId: string): Promise<any[]> {
-    const messages = await this.messagesRepository
-      .createQueryBuilder('message')
-      .leftJoinAndSelect('message.exchange', 'exchange')
-      .leftJoinAndSelect('message.sender', 'sender')
-      .leftJoinAndSelect('message.receiver', 'receiver')
-      .where('message.senderId = :userId OR message.receiverId = :userId', {
-        userId,
-      })
-      .orderBy('message.createdAt', 'DESC')
-      .getMany();
+    const messages = await this.prisma.message.findMany({
+      where: {
+        OR: [{ senderId: userId }, { receiverId: userId }],
+      },
+      include: { exchange: true, sender: true, receiver: true },
+      orderBy: { createdAt: 'desc' },
+    });
 
     // Group by exchange
     const conversations = messages.reduce((acc, message) => {
@@ -67,19 +57,21 @@ export class MessagesService {
         acc[message.exchangeId].unreadCount++;
       }
       return acc;
-    }, {});
+    }, {} as Record<string, any>);
 
     return Object.values(conversations);
   }
 
   async markAsRead(messageId: string, userId: string): Promise<Message> {
-    const message = await this.messagesRepository.findOne({
-      where: { id: messageId, receiverId: userId },
+    const message = await this.prisma.message.findUnique({
+      where: { id: messageId },
     });
 
-    if (message) {
-      message.isRead = true;
-      return this.messagesRepository.save(message);
+    if (message && message.receiverId === userId) {
+      return this.prisma.message.update({
+        where: { id: messageId },
+        data: { isRead: true },
+      });
     }
 
     return null;
@@ -89,9 +81,9 @@ export class MessagesService {
     exchangeId: string,
     userId: string,
   ): Promise<void> {
-    await this.messagesRepository.update(
-      { exchangeId, receiverId: userId, isRead: false },
-      { isRead: true },
-    );
+    await this.prisma.message.updateMany({
+      where: { exchangeId, receiverId: userId, isRead: false },
+      data: { isRead: true },
+    });
   }
 }

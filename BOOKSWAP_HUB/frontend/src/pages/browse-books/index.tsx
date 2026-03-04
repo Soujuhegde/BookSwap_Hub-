@@ -13,7 +13,7 @@ import { mockBooks } from '../../data/mockBooks';
 const BrowseBooks = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const [isAuthenticated] = useState(true);
+
     const [books, setBooks] = useState<Book[]>([]);
     const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -151,16 +151,10 @@ const BrowseBooks = () => {
         setIsQuickViewOpen(true);
     };
 
-    const handleLogout = () => {
-        navigate('/login');
-    };
-
     return (
         <div className="min-h-screen bg-background">
             <Header
-                isAuthenticated={isAuthenticated}
-                notificationCount={3}
-                onLogout={handleLogout} />
+                notificationCount={3} />
 
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

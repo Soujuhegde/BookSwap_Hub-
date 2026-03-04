@@ -1,5 +1,4 @@
 import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import AuthenticationToggle from '../../components/ui/AuthenticationToggle';
 import Input from '../../components/ui/Input';
@@ -7,13 +6,11 @@ import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
 import Image from '../../components/AppImage';
 import PasswordStrengthIndicator from './components/PasswordStrengthIndicator';
-import GenreSelector from './components/GenreSelector';
 import TermsCheckbox from './components/CombinedTermsCheckbox';
 import SuccessModal from './components/SuccessModal';
 import type { RegisterFormData, ValidationErrors } from './types';
 
 const Register = () => {
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -111,7 +108,7 @@ const Register = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header isAuthenticated={false} onLogout={() => { }} />
+      <Header />
 
       <main className="flex items-center justify-center px-4 py-8 sm:py-12">
         <div className="w-full max-w-6xl">
