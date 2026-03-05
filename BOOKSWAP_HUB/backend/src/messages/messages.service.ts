@@ -2,10 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Message } from '../../prisma/client';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { MessagesGateway } from './messages.gateway';
 
 @Injectable()
 export class MessagesService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    private messagesGateway: MessagesGateway,
+  ) { }
 
   async create(
     createMessageDto: CreateMessageDto,
@@ -19,12 +23,20 @@ export class MessagesService {
       throw new NotFoundException('Exchange not found');
     }
 
-    return this.prisma.message.create({
+    const newMessage = await this.prisma.message.create({
       data: {
         ...createMessageDto,
         senderId: userId,
       },
+      include: {
+        sender: true,
+        receiver: true,
+      },
     });
+
+    this.messagesGateway.broadcastNewMessage(createMessageDto.exchangeId, newMessage);
+
+    return newMessage;
   }
 
   async findByExchange(exchangeId: string): Promise<Message[]> {
